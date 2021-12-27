@@ -1,0 +1,32 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+)
+
+func main() {
+	ch := make(chan int)
+	go getWebPageSize("https://example.com/", ch)
+	go getWebPageSize("https://golang.org/", ch)
+	go getWebPageSize("https://golang.org/doc", ch)
+	fmt.Println(<-ch)
+	fmt.Println(<-ch)
+	fmt.Println(<-ch)
+}
+
+func getWebPageSize(url string, ch chan int) {
+	defer fmt.Println("Getting", url)
+	response, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ch <- len(body)
+}

@@ -1,0 +1,69 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+)
+
+func main() {
+	var floats []float64
+	var err error
+	if len(os.Args[1:]) == 0 {
+		fn := "data.txt"
+		floats, err = ScanFileFloat(fn)
+	} else {
+		floats, err = ScanCliFloat(os.Args[1:]...)
+	}
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	var sum float64
+	for _, v := range floats {
+		sum += v
+	}
+
+	ave := sum / float64(len(floats))
+	fmt.Printf("平均は%.2f", ave)
+}
+
+func ScanFileFloat(filename string) ([]float64, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	var floats []float64
+	for s.Scan() {
+		float, err := strconv.ParseFloat(s.Text(), 64)
+		if err != nil {
+			log.Println(err)
+		}
+		floats = append(floats, float)
+	}
+
+	if err = s.Err(); err != nil {
+		return nil, err
+	}
+
+	return floats, nil
+}
+
+func ScanCliFloat(params ...string) ([]float64, error) {
+	var floats []float64
+	for _, v := range params {
+		fv, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			log.Println(err)
+		}
+		floats = append(floats, fv)
+	}
+
+	return floats, nil
+}
